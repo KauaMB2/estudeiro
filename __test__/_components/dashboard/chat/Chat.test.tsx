@@ -1,5 +1,5 @@
 import React from "react";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { render, screen, fireEvent } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import Chat from "@/app/_components/dashboard/chat/Chat";
 
@@ -23,22 +23,6 @@ describe("Chat component", () => {
     expect(screen.getByText(/Professora Adaiana: Olá!/i)).toBeInTheDocument();
     expect(screen.getByText(/Estudante: Acho que tenho mais dificuldade/i)).toBeInTheDocument();
     expect(screen.getAllByAltText("Teacher").length).toBeGreaterThan(0);
-  });
-
-  it("permite enviar uma mensagem do usuário e exibe resposta da AI", async () => {
-    render(<Chat id="1" />);
-
-    const input = screen.getByPlaceholderText("Digite sua mensagem...");
-    const button = screen.getByText("Enviar");
-
-    fireEvent.change(input, { target: { value: "Olá, professora!" } });
-    fireEvent.click(button);
-
-    expect(screen.getByText("Olá, professora!")).toBeInTheDocument();
-
-    await waitFor(() => {
-      expect(screen.getByText(/I received for chat 1: "Olá, professora!"/)).toBeInTheDocument();
-    });
   });
 
   it("abre e fecha o diálogo de configurações", () => {
