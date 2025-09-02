@@ -47,4 +47,4 @@ npm start
 
 ## Explicação do erro no teste unitário:
 
-A [Natália](https://github.com/Natalia-Dias22) havia modificado a conversa de exemplo no arquivo `app\_components\dashboard\chat\Chat.tsx` e o teste unitário exige que a conversa esteja no formato correto. Quando eu rodei `npm run test`, foi apontado esse erro e, após isso, o problema foi corrigido para esse componente passar no teste.
+A [Natália](https://github.com/Natalia-Dias22) modificou a conversa de exemplo no arquivo `app\_components\dashboard\chat\Chat.tsx` e solicitou um PR da branch `new-feature` para a `main`. Quando eu rodei `npm run test`, foi apontado um erro no teste unitário que, após notado, foi corrigido para o teste voltar a passar.
