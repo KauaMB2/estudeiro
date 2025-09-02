@@ -26,7 +26,7 @@ const Chat: React.FC<ChatProps> = ({ id }) => {
   ? [
       {
         id: 1,
-        text: "👩‍🏫 BUG NO SISTEMA. 😊",
+        text: "👩‍🏫 Professora Adaiana: Olá! Que bom ter você aqui. 😊",
         sender: "ai",
       },
       {
