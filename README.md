@@ -44,3 +44,7 @@ npm start
 - Next.js
 - React
 - Node.js
+
+## Explicação do erro no teste unitário:
+
+A [Natália](https://github.com/Natalia-Dias22) havia modificado a conversa de exemplo no arquivo `app\_components\dashboard\chat\Chat.tsx` e o teste unitário exige que a conversa esteja no formato correto. Quando eu rodei `npm run test`, foi apontado esse erro e, após isso, o problema foi corrigido para esse componente passar no teste.
