@@ -2,8 +2,8 @@
 
 import Image from "next/image";
 import { Dispatch, SetStateAction } from "react";
-import KnowledgeIcon from "@/src/assets/brain-pictogram-5-svgrepo-com.svg";
-import BrainIcon from "@/src/assets/ai-svgrepo-com.svg";
+import KnowledgeIcon from "./../../../src/assets/brain-pictogram-5-svgrepo-com.svg";
+import BrainIcon from "./../../../src/assets/ai-svgrepo-com.svg";
 import Agents from "./Agents";
 import { Button } from "../ui/button";
 import CreateAIKnowledge from "./knowledge/CreateAIKnowledge";
@@ -40,7 +40,7 @@ const Sidebar = ({currentSection,
               onClick={() => setCurrentSection('agents')}
               className="flex items-center p-2 text-gray-300 rounded-lg hover:bg-gray-100 transition-colors duration-300"
             >
-              <Image width={24} src={BrainIcon} className="w-5" alt="Camera Icon" />
+              <Image width={24} height={24} src={BrainIcon} className="w-5" alt="Camera Icon" />
               {isExpanded && <span className="ms-3">Agentes de I.A</span>}
             </a>
           </li>
@@ -50,7 +50,7 @@ const Sidebar = ({currentSection,
               onClick={() => setCurrentSection('knowledge')}
               className="flex items-center p-2 text-gray-300 rounded-lg hover:bg-gray-100 transition-colors duration-300"
             >
-              <Image width={24} src={KnowledgeIcon} className="w-5" alt="Folder Icon" />
+              <Image width={24} height={24} src={KnowledgeIcon} className="w-5" alt="Folder Icon" />
               {isExpanded && <span className="ms-3">Conhecimento</span>}
             </a>
           </li>

@@ -4,7 +4,6 @@ import { useState } from 'react';
 import { AIAgentDialog } from './Dialog';
 import { AIAgent } from '@/src/utils/models/ai_agent';
 import AdaianaPicture from "@/src/assets/adaianateacher.png";
-import AnaClaudiaPicture from "@/src/assets/anaclaudiateacher.png";
 import RenanPicture from "@/src/assets/renanteacher.png";
 interface AgentType {
   aiAgent: AIAgent;
@@ -21,11 +20,7 @@ const Agents = () => {
     {
       aiAgent: { id: 2, name: "Renan Sthel", description: "Professor de probabilidade", profilePicture: RenanPicture },
       skills: ['Probabilidade', 'Processos estocásticos', 'Cálculo']
-    },
-    {
-      aiAgent: { id: 3, name: "Ana Cláudia", description: "Professor de probabilidade", profilePicture: AnaClaudiaPicture },
-      skills: ['Biologia']
-    },
+    }
   ]);
   const filteredAgents = agents.filter(agent =>
     agent.aiAgent.name.toLowerCase().includes(searchQuery.toLowerCase()) ||

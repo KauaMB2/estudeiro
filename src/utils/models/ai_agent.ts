@@ -1,3 +1,5 @@
+import { StaticImageData } from "next/image";
+
 export interface AIAgent{
     id: number;
     name: string;
@@ -7,6 +9,7 @@ export interface AIAgent{
     personality: string;
     teacher: number;
     public: boolean;
+    profilePicture: StaticImageData;
     created?: Date;
     updated?: Date;
 }

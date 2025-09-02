@@ -175,7 +175,7 @@ const CreateAIKnowledge = () => {
         >
           {extractorLoading ? (
             <div className="flex justify-center items-center h-full">
-              <Image src={loadingGif} alt="Loading extraction..." />
+              <Image width={24} height={24} src={loadingGif} alt="Loading extraction..." />
             </div>
           ) : (
             <p
@@ -197,7 +197,7 @@ const CreateAIKnowledge = () => {
 
         {submitLoading ? (
           <div className="flex justify-center items-center h-full">
-            <Image src={loadingGif} alt="Loading submit..." />
+            <Image width={24} height={24} src={loadingGif} alt="Loading submit..." />
           </div>
         ) : (
           <Button

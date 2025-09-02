@@ -31,6 +31,7 @@ const aiAgentBlank: AIAgent = {
     personality: '',
     teacher: 0,
     public: false,
+    profilePicture: '',
     created: new Date(),
     updated: new Date(),
 }

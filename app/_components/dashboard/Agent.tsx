@@ -1,5 +1,5 @@
 'use client';
-import Image from "next/image";
+import Image, { StaticImageData } from "next/image";
 import Link from "next/link";
 import { AIAgent } from "@/src/utils/models/ai_agent";
 
@@ -7,11 +7,10 @@ interface AgentProps {
   id: number;
   aiAgent: AIAgent;
   skills: string[];
-  profilePicture: string;
+  profilePicture: StaticImageData;
 }
 
 const Agent = ({ id, aiAgent, skills, profilePicture }: AgentProps) => {
-  console.log({ id, aiAgent, skills });
   return (
     <Link
       href={`/dashboard/chat/${id}`}
