@@ -15,5 +15,6 @@ export default defineConfig({
     globals: true,
     environment: "jsdom",
     setupFiles: "./vitest.setup.ts",
+    reporters: [['html', { outputFile: './vitestreport/index.html', inlineAssets: true }]]
   },
 });
