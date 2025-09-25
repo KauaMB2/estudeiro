@@ -1,6 +1,5 @@
 name: CI/CD Pipeline - Next.js (Tests → Build → Notify)
 
-# Run on push to main or on manual trigger
 on:
   push:
     branches: ["main"]
@@ -15,7 +14,6 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  # Non-secret defaults (can be overridden by repository secrets or workflow_dispatch inputs)
   NODE_VERSION: "20"
 
 jobs:
@@ -48,7 +46,6 @@ jobs:
           # Run tests; if you use a different npm script, adjust below.
           # We run tests normally so failure will be detected; we still capture outcome below.
           npm run test:unit
-        # don't short-circuit; we want the next always() step to run and set outputs
         continue-on-error: true
 
       - name: Upload test report artifact
@@ -78,7 +75,7 @@ jobs:
           fi
 
   # -----------------------
-  # Job: Build (Empacotamento)
+  # Job: Build
   # Runs in parallel with "tests"
   # -----------------------
   build:
@@ -126,9 +123,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: next-build
-          path: |
-            .next.tar.gz
-            .next
+          path: .next.tar.gz
           retention-days: 7
 
       - name: Set build job status output
@@ -147,8 +142,8 @@ jobs:
 
   # -----------------------
   # Job: Notification
-  # Depends on both tests and build; runs after (they run in parallel)
-  # This job will send an email using msmtp. The recipient must be provided via a secret/env variable.
+  # Depends on both tests and build;
+  # This job will send an email using msmtp.
   # -----------------------
   notify:
     name: Send notification email
@@ -239,13 +234,11 @@ jobs:
 
       - name: Send email (using msmtp)
         env:
-          # Sensitive values should be stored as repository secrets and mapped to these env vars.
           MAIL_TO: ${{ secrets.MAIL_TO }}
           SMTP_HOST: ${{ secrets.SMTP_HOST }}
           SMTP_PORT: ${{ secrets.SMTP_PORT }}
           SMTP_USER: ${{ secrets.SMTP_USER }}
           SMTP_PASS: ${{ secrets.SMTP_PASS }}
-          # Pass statuses prepared in previous step
           TEST_STATUS: ${{ env.TEST_STATUS }}
           BUILD_STATUS: ${{ env.BUILD_STATUS }}
         run: |
