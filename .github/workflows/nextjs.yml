@@ -145,6 +145,7 @@ jobs:
     name: Send notification email
     runs-on: ubuntu-latest
     needs: [tests, build]
+    if: always()
     steps:
       - name: Checkout (for scripts, optional)
         uses: actions/checkout@v4
