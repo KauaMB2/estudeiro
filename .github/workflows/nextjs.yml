@@ -113,10 +113,13 @@ jobs:
           ls -la
           if [ -d .next ]; then
             tar -czf .next.tar.gz .next
+            chmod 644 .next.tar.gz
+            ls -la .next.tar.gz
             echo ".next packaged to .next.tar.gz"
           else
             echo ".next directory not found; packaging skipped"
           fi
+
 
       - name: Upload build artifact
         if: always()
