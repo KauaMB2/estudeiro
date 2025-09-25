@@ -33,7 +33,7 @@ const CreateAIKnowledge = () => {
   const [allAIAgent, setAllAIAgent] = useState<AIAgent[]>([]);
   const [aiAgentId, setAIAgentId] = useState<number>(-1);
   const [activeTab, setActiveTab] = useState<ActiveTab>('files');
-  const [fileName, setFileName] = useState<string>('');
+  const [, setFileName] = useState<string>('');
 
   const router = useRouter();
 
@@ -79,45 +79,6 @@ const CreateAIKnowledge = () => {
       return;
     }
 
-    // Determine the type of the knowledge based on the active tab
-    let type: string;
-    let reference: string;
-    switch (activeTab) {
-      case 'files': {
-        const fileExtension = fileName.toLowerCase().split('.').pop();
-        if (fileExtension === 'pdf') {
-          type = 'PDF';
-        } else if (fileExtension === 'doc' || fileExtension === 'docx') {
-          type = 'Word';
-        } else {
-          type = 'Arquivo';
-        }
-        reference = fileName;
-        break;
-      }
-      case 'website':
-        type = 'Website';
-        reference = urlsText.websiteURL || '';
-        break;
-      case 'youtube':
-        type = 'Youtube';
-        reference = urlsText.youtubeURL || '';
-        break;
-      case 'FAQ':
-        type = 'FAQ';
-        reference = 'FAQ';
-        break;
-      default:
-        type = 'unknown';
-        reference = '';
-    }
-
-    const createAIKnowledgeObj = {
-      aiAgentId,
-      type,
-      reference,
-      extractedText,
-    };
 
     try {
       // Send the data to the backend

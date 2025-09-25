@@ -15,9 +15,10 @@ import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/app/_components/ui/select';
 import { Checkbox } from '../ui/checkbox';
+import teacherImage from '@/src/assets/teacher.jpg';
 
 interface AIAgentDialogProps{
-    aiAgent: AIAgent,
+    aiAgent: AIAgent | null,
     create: boolean,
     allTeachers: Teacher[],
 }
@@ -31,7 +32,7 @@ const aiAgentBlank: AIAgent = {
     personality: '',
     teacher: 0,
     public: false,
-    profilePicture: '',
+    profilePicture: teacherImage,
     created: new Date(),
     updated: new Date(),
 }

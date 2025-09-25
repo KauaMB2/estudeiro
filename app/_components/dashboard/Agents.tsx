@@ -14,11 +14,11 @@ const Agents = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [agents] = useState<AgentType[]>([
     {
-      aiAgent: { id: 1, name: "Adaiana Orcheski", description: "Professor da filosofia", profilePicture: AdaianaPicture },
+      aiAgent: { id: 1, name: "Adaiana Orcheski", description: "Professor da filosofia", profilePicture: AdaianaPicture, instructions: '', behavior: '', personality: '', teacher: 0, public: false },
       skills: ['Filosofia', 'Lógica'],
     },
     {
-      aiAgent: { id: 2, name: "Renan Sthel", description: "Professor de probabilidade", profilePicture: RenanPicture },
+      aiAgent: { id: 2, name: "Renan Sthel", description: "Professor de probabilidade", profilePicture: RenanPicture, instructions: '', behavior: '', personality: '', teacher: 0, public: false },
       skills: ['Probabilidade', 'Processos estocásticos', 'Cálculo']
     }
   ]);

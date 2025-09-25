@@ -1,7 +1,7 @@
 import { useRef, useEffect, useState, useCallback, ChangeEvent, SetStateAction, Dispatch } from 'react';
 import { LucideHardDriveUpload, FileArchiveIcon } from 'lucide-react';
 import Image from 'next/image';
-import { CustomFile } from '../account/knowledge/interfaces/interfaces';
+import { CustomFile } from '../dashboard/knowledge/interfaces/interfaces';
 
 export interface CustomDragAndDropProps {
   ownerLicense: CustomFile[];

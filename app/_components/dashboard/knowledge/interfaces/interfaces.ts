@@ -1,7 +1,7 @@
-import { AIAgents } from '@/src/models/ai-agent';
-import { AIKnowledges } from '@/src/models/ai-knowledge';
+import { AIAgent } from '@/src/utils/models/ai_agent';
+import { AIKnowledges } from '@/src/utils/models/ai_knowledge';
 import { ColumnDef } from '@tanstack/react-table';
-import { Dispatch, SetStateAction } from 'react';
+import { Dispatch, JSX, SetStateAction } from 'react';
 
 export type ActiveTab = 'files' | 'website' | 'youtube' | 'FAQ';
 
@@ -14,7 +14,7 @@ export interface CustomFile {
 export interface DataTableProps<TData extends AIKnowledges, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
-  allAIAgents: AIAgents[];
+  allAIAgents: AIAgent[];
 }
 
 export interface CheckboxesProps {
