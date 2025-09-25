@@ -123,8 +123,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: next-build
-          path: .next.tar.gz
+          path: .next
           retention-days: 7
+
 
       - name: Set build job status output
         id: set_build_status
