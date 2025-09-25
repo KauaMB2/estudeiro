@@ -43,8 +43,6 @@ jobs:
       - name: Run tests (Vitest) - generates HTML report at ./vitestreport/index.html
         id: run_tests
         run: |
-          # Run tests; if you use a different npm script, adjust below.
-          # We run tests normally so failure will be detected; we still capture outcome below.
           npm run test:unit
         continue-on-error: true
 
@@ -60,7 +58,6 @@ jobs:
         id: set_status
         if: always()
         run: |
-          # Determine outcome of the run_tests step
           if [ "${{ steps.run_tests.outcome }}" = "success" ]; then
             echo "test_result=success" >> $GITHUB_OUTPUT
             echo "Tests succeeded"
@@ -68,9 +65,6 @@ jobs:
           else
             echo "test_result=failure" >> $GITHUB_OUTPUT
             echo "Tests failed (see vitest report artifact)"
-            # don't exit non-zero here: we already used continue-on-error above,
-            # but we still want the job to be marked as failed for visibility.
-            # To mark job as failed, explicitly exit 1 after setting output.
             exit 1
           fi
 
@@ -100,7 +94,6 @@ jobs:
       - name: Build Next.js (.next)
         id: next_build
         run: |
-          # Build the Next.js project; adjust command if you use a different script
           npm run build
         continue-on-error: true
 
@@ -158,33 +151,28 @@ jobs:
 
       - name: Install required system packages (msmtp)
         run: |
-          # Any required software must be installed via script as requested.
           sudo apt-get update -y
           sudo apt-get install -y msmtp-mta ca-certificates bsd-mailx
 
       - name: Prepare send-email script
         id: prepare_script
         run: |
-          # Create a small script that will send an email via msmtp.
-          # The script reads SMTP configuration from environment variables (secrets).
           cat > ./send_pipeline_mail.sh <<'EOF'
           #!/usr/bin/env bash
           set -euo pipefail
 
           # Required env vars:
-          # MAIL_TO      - recipient email address (must be set as repository secret or env)
+          # MAIL_TO      - recipient email address (must be set as repository secret)
           # SMTP_HOST    - SMTP server host
           # SMTP_PORT    - SMTP server port (e.g. 587)
           # SMTP_USER    - SMTP username
           # SMTP_PASS    - SMTP password
-          # MAIL_FROM    - optional from address (default: github-actions@localhost)
 
           if [ -z "${MAIL_TO:-}" ]; then
             echo "ERROR: MAIL_TO is not set"
             exit 2
           fi
 
-          # Compose message
           TEST_STATUS="${TEST_STATUS:-unknown}"
           BUILD_STATUS="${BUILD_STATUS:-unknown}"
           SUBJECT="CI Pipeline result: Tests=${TEST_STATUS}, Build=${BUILD_STATUS}"
@@ -211,15 +199,12 @@ jobs:
 
           export MSMTP_CONFIG="$MSMPTRC"
 
-          # send the mail using "mail" that delegates to msmtp
           echo -e "Subject: ${SUBJECT}\n\n${BODY}" | msmtp --file="$MSMPTRC" --debug -- "${MAIL_TO}"
 
-          # show msmtp log for debugging in the Actions log (but it may contain sensitive info)
           echo "--------- msmtp log ---------"
           sed -n '1,200p' /tmp/msmtp.log || true
           echo "-----------------------------"
 
-          # Cleanup
           rm -f "$MSMPTRC"
           exit 0
           EOF
@@ -230,7 +215,6 @@ jobs:
       - name: Prepare variables for email
         id: prepare_vars
         run: |
-          # Read job outputs from needs to form message content
           echo "TEST_STATUS=${{ needs.tests.outputs.test_result }}" >> $GITHUB_ENV
           echo "BUILD_STATUS=${{ needs.build.outputs.build_result }}" >> $GITHUB_ENV
           echo "Prepared TEST_STATUS and BUILD_STATUS environment variables."
@@ -250,7 +234,6 @@ jobs:
             exit 0
           fi
 
-          # Call the script created earlier
           ./send_pipeline_mail.sh
 
       - name: Final status output
