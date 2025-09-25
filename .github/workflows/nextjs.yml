@@ -104,29 +104,28 @@ jobs:
           npm run build
         continue-on-error: true
 
-      - name: Package build output (.next) as tar.gz
+      - name: Rename .next to next
         if: always()
         run: |
           echo "Current directory:"
           pwd
-          echo "Listing files:"
+          echo "Listing files before rename:"
           ls -la
           if [ -d .next ]; then
-            tar -czf .next.tar.gz .next
-            chmod 644 .next.tar.gz
-            ls -la .next.tar.gz
-            echo ".next packaged to .next.tar.gz"
+            mv .next next
+            echo "Renamed .next → next"
+            echo "Listing files after rename:"
+            ls -la
           else
-            echo ".next directory not found; packaging skipped"
+            echo ".next directory not found; rename skipped"
           fi
-
 
       - name: Upload build artifact
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: next-build
-          path: ./.next
+          path: ./next
           retention-days: 7
 
 
