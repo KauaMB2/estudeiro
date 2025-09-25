@@ -79,7 +79,7 @@ jobs:
   # Runs in parallel with "tests"
   # -----------------------
   build:
-    name: Build / Empacotamento (Next.js)
+    name: Build (Next.js)
     runs-on: ubuntu-latest
     outputs:
       build_result: ${{ steps.set_build_status.outputs.build_result }}
@@ -123,7 +123,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: next-build
-          path: .next
+          path: .next.tar.gz
           retention-days: 7
 
 
