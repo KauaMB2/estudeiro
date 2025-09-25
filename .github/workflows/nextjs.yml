@@ -1,0 +1,259 @@
+name: CI/CD Pipeline - Next.js (Tests → Build → Notify)
+
+# Run on push to main or on manual trigger
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: write
+
+concurrency:
+  group: "ci-cd-pipeline"
+  cancel-in-progress: false
+
+env:
+  # Non-secret defaults (can be overridden by repository secrets or workflow_dispatch inputs)
+  NODE_VERSION: "20"
+
+jobs:
+  # -----------------------
+  # Job: Tests
+  # Runs in parallel with "build"
+  # -----------------------
+  tests:
+    name: Run unit & mock tests
+    runs-on: ubuntu-latest
+    outputs:
+      test_result: ${{ steps.set_status.outputs.test_result }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Use Node ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: Install dependencies
+        run: |
+          npm ci
+
+      - name: Run tests (Vitest) - generates HTML report at ./vitestreport/index.html
+        id: run_tests
+        run: |
+          # Run tests; if you use a different npm script, adjust below.
+          # We run tests normally so failure will be detected; we still capture outcome below.
+          npm run test:unit
+        # don't short-circuit; we want the next always() step to run and set outputs
+        continue-on-error: true
+
+      - name: Upload test report artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: vitest-report
+          path: ./vitestreport
+          retention-days: 7
+
+      - name: Set test job status output
+        id: set_status
+        if: always()
+        run: |
+          # Determine outcome of the run_tests step
+          if [ "${{ steps.run_tests.outcome }}" = "success" ]; then
+            echo "test_result=success" >> $GITHUB_OUTPUT
+            echo "Tests succeeded"
+            exit 0
+          else
+            echo "test_result=failure" >> $GITHUB_OUTPUT
+            echo "Tests failed (see vitest report artifact)"
+            # don't exit non-zero here: we already used continue-on-error above,
+            # but we still want the job to be marked as failed for visibility.
+            # To mark job as failed, explicitly exit 1 after setting output.
+            exit 1
+          fi
+
+  # -----------------------
+  # Job: Build (Empacotamento)
+  # Runs in parallel with "tests"
+  # -----------------------
+  build:
+    name: Build / Empacotamento (Next.js)
+    runs-on: ubuntu-latest
+    outputs:
+      build_result: ${{ steps.set_build_status.outputs.build_result }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Use Node ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: Install dependencies
+        run: |
+          npm ci
+
+      - name: Build Next.js (.next)
+        id: next_build
+        run: |
+          # Build the Next.js project; adjust command if you use a different script
+          npm run build
+        continue-on-error: true
+
+      - name: Package build output (.next) as tar.gz
+        if: always()
+        run: |
+          if [ -d .next ]; then
+            tar -czf .next.tar.gz .next
+            echo ".next packaged to .next.tar.gz"
+          else
+            echo ".next directory not found; packaging skipped"
+          fi
+
+      - name: Upload build artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: next-build
+          path: |
+            .next.tar.gz
+            .next
+          retention-days: 7
+
+      - name: Set build job status output
+        id: set_build_status
+        if: always()
+        run: |
+          if [ "${{ steps.next_build.outcome }}" = "success" ]; then
+            echo "build_result=success" >> $GITHUB_OUTPUT
+            echo "Build succeeded"
+            exit 0
+          else
+            echo "build_result=failure" >> $GITHUB_OUTPUT
+            echo "Build failed (see build logs / artifact)"
+            exit 1
+          fi
+
+  # -----------------------
+  # Job: Notification
+  # Depends on both tests and build; runs after (they run in parallel)
+  # This job will send an email using msmtp. The recipient must be provided via a secret/env variable.
+  # -----------------------
+  notify:
+    name: Send notification email
+    runs-on: ubuntu-latest
+    needs: [tests, build]
+    steps:
+      - name: Checkout (for scripts, optional)
+        uses: actions/checkout@v4
+
+      - name: Install required system packages (msmtp)
+        run: |
+          # Any required software must be installed via script as requested.
+          sudo apt-get update -y
+          sudo apt-get install -y msmtp-mta ca-certificates bsd-mailx
+
+      - name: Prepare send-email script
+        id: prepare_script
+        run: |
+          # Create a small script that will send an email via msmtp.
+          # The script reads SMTP configuration from environment variables (secrets).
+          cat > ./send_pipeline_mail.sh <<'EOF'
+          #!/usr/bin/env bash
+          set -euo pipefail
+
+          # Required env vars:
+          # MAIL_TO      - recipient email address (must be set as repository secret or env)
+          # SMTP_HOST    - SMTP server host
+          # SMTP_PORT    - SMTP server port (e.g. 587)
+          # SMTP_USER    - SMTP username
+          # SMTP_PASS    - SMTP password
+          # MAIL_FROM    - optional from address (default: github-actions@localhost)
+
+          if [ -z "${MAIL_TO:-}" ]; then
+            echo "ERROR: MAIL_TO is not set"
+            exit 2
+          fi
+
+          # Compose message
+          TEST_STATUS="${TEST_STATUS:-unknown}"
+          BUILD_STATUS="${BUILD_STATUS:-unknown}"
+          SUBJECT="CI Pipeline result: Tests=${TEST_STATUS}, Build=${BUILD_STATUS}"
+
+          BODY="Pipeline run for ref: ${GITHUB_REPOSITORY}@${GITHUB_SHA:-unknown}\n\nTests: ${TEST_STATUS}\nBuild: ${BUILD_STATUS}\n\nView artifacts in the workflow run."
+
+          # Configure msmtp at runtime
+          MSMPTRC="$(mktemp)"
+          chmod 600 "$MSMPTRC"
+          cat > "$MSMPTRC" <<MSMTP
+          defaults
+          tls on
+          tls_trust_file /etc/ssl/certs/ca-certificates.crt
+          logfile /tmp/msmtp.log
+
+          account default
+          host ${SMTP_HOST:-}
+          port ${SMTP_PORT:-587}
+          auth on
+          user ${SMTP_USER:-}
+          password ${SMTP_PASS:-}
+          from ${MAIL_FROM:-github-actions@$GITHUB_REPOSITORY}
+          MSMTP
+
+          export MSMTP_CONFIG="$MSMPTRC"
+
+          # send the mail using "mail" that delegates to msmtp
+          echo -e "Subject: ${SUBJECT}\n\n${BODY}" | msmtp --file="$MSMPTRC" --debug -- "${MAIL_TO}"
+
+          # show msmtp log for debugging in the Actions log (but it may contain sensitive info)
+          echo "--------- msmtp log ---------"
+          sed -n '1,200p' /tmp/msmtp.log || true
+          echo "-----------------------------"
+
+          # Cleanup
+          rm -f "$MSMPTRC"
+          exit 0
+          EOF
+
+          chmod +x ./send_pipeline_mail.sh
+          echo "send_pipeline_mail.sh created"
+
+      - name: Prepare variables for email
+        id: prepare_vars
+        run: |
+          # Read job outputs from needs to form message content
+          echo "TEST_STATUS=${{ needs.tests.outputs.test_result }}" >> $GITHUB_ENV
+          echo "BUILD_STATUS=${{ needs.build.outputs.build_result }}" >> $GITHUB_ENV
+          echo "Prepared TEST_STATUS and BUILD_STATUS environment variables."
+
+      - name: Send email (using msmtp)
+        env:
+          # Sensitive values should be stored as repository secrets and mapped to these env vars.
+          MAIL_TO: ${{ secrets.MAIL_TO }}
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+          # Pass statuses prepared in previous step
+          TEST_STATUS: ${{ env.TEST_STATUS }}
+          BUILD_STATUS: ${{ env.BUILD_STATUS }}
+        run: |
+          if [ -z "${MAIL_TO:-}" ]; then
+            echo "MAIL_TO not set. Skipping email send (to run for real, add MAIL_TO and SMTP_* secrets)."
+            exit 0
+          fi
+
+          # Call the script created earlier
+          ./send_pipeline_mail.sh
+
+      - name: Final status output
+        run: |
+          echo "Notification step finished. Test result: ${{ needs.tests.outputs.test_result }}, Build result: ${{ needs.build.outputs.build_result }}"
+
