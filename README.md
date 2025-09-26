@@ -1,3 +1,5 @@
+[![CI/CD Pipeline - Next.js (Tests → Build → Notify)](https://github.com/KauaMB2/estudeiro/actions/workflows/nextjs.yml/badge.svg)](https://github.com/KauaMB2/estudeiro/actions/workflows/nextjs.yml)
+
 # Estudeiro
 
 O **Estudeiro** é um software educacional que usa Inteligência Artificial para auxiliar os estudos. Ele funciona como uma extensão do seu professor: você pode tirar dúvidas sobre a matéria diretamente com um agente de IA treinado para isso.
