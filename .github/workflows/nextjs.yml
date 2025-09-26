@@ -256,8 +256,10 @@ jobs:
 
       - name: Copy Docker build and run commands to VPS
         run: |
-          ssh githubdeploy@${{ secrets.VPS_HOST }} << 'EOF'
-            cd /home/githubdeploy/app
+          VPS_USER=${{ secrets.VPS_USER }}
+          VPS_HOST=${{ secrets.VPS_HOST }}
+          ssh $VPS_USER@$VPS_HOST << EOF
+            cd /home/$VPS_USER/app
             git pull origin main
             docker build -t estudeiro .
             docker stop estudeiro || true
