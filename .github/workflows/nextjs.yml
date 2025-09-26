@@ -240,4 +240,27 @@ jobs:
       - name: Final status output
         run: |
           echo "Notification step finished. Test result: ${{ needs.tests.outputs.test_result }}, Build result: ${{ needs.build.outputs.build_result }}"
+  deploy:
+    name: Deploy to Ubuntu VPS
+    runs-on: ubuntu-latest
+    needs: [tests, build]
+    if: needs.tests.outputs.test_result == 'success' && needs.build.outputs.build_result == 'success'
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
 
+      - name: Set up SSH
+        uses: webfactory/ssh-agent@v0.8.1
+        with:
+          ssh-private-key: ${{ secrets.GITHUBDEPLOY_KEY }}
+
+      - name: Copy Docker build and run commands to VPS
+        run: |
+          ssh githubdeploy@YOUR_SERVER_IP << 'EOF'
+            cd /home/githubdeploy/app
+            git pull origin main
+            docker build -t estudeiro .
+            docker stop estudeiro || true
+            docker rm estudeiro || true
+            docker run -d --network host --name estudeiro --env-file .env estudeiro npm start -- -p 3001
+          EOF
