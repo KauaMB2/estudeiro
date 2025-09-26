@@ -144,7 +144,7 @@ jobs:
   notify:
     name: Send notification email
     runs-on: ubuntu-latest
-    needs: [tests, build]
+    needs: [tests, build, deploy]
     if: always()
     steps:
       - name: Checkout (for scripts, optional)
