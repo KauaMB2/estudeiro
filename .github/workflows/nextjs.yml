@@ -250,13 +250,13 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set up SSH
-        uses: webfactory/ssh-agent@v0.8.1
+        uses: webfactory/ssh-agent@v0
         with:
           ssh-private-key: ${{ secrets.GITHUBDEPLOY_KEY }}
 
       - name: Copy Docker build and run commands to VPS
         run: |
-          ssh githubdeploy@YOUR_SERVER_IP << 'EOF'
+          ssh githubdeploy@${{ secrets.VPS_HOST }} << 'EOF'
             cd /home/githubdeploy/app
             git pull origin main
             docker build -t estudeiro .
