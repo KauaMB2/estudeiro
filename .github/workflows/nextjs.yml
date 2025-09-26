@@ -264,11 +264,13 @@ jobs:
         run: |
           VPS_USER=${{ secrets.VPS_USER }}
           VPS_HOST=${{ secrets.VPS_HOST }}
-          ssh $VPS_USER@$VPS_HOST << 'EOF'
+          GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
+          ssh $VPS_USER@$VPS_HOST << EOF
             set -e
-            cd /home/$USER/app || mkdir -p /home/$USER/app && cd /home/$USER/app
+            mkdir -p /home/$USER/app
+            cd /home/$USER/app
             if [ ! -d .git ]; then
-              git clone git@github.com:${GITHUB_REPOSITORY}.git .
+              git clone https://x-access-token:$GITHUB_TOKEN@github.com/${GITHUB_REPOSITORY}.git .
             else
               git pull origin main
             fi
